@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Gift</title>
+    <style>
+        /* ============================================
+           CUSTOMIZATION GUIDE:
+           - Change colors in :root variables below
+           - Adjust timing in JavaScript section
+           - Replace placeholder images with your photos
+           - Add your music file path
+        ============================================ */
+
+        :root {
+            /* Colors - customize these to match your theme */
+            --text-color: #ffffff;
+            --overlay-color: rgba(0, 0, 0, 0.5);
+            --accent-color: #f8d7da;
+            --transition-speed: 2s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background-color: #000;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(40, 30, 50, 0.95));
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 1.5s ease-out;
+        }
+
+        .welcome-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .welcome-content {
+            text-align: center;
+            padding: 20px;
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 300;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .welcome-subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--text-color);
+            opacity: 0.9;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        /* Slideshow Container */
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity var(--transition-speed) ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay-color);
+        }
+
+        /* Music Control */
+        .music-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .music-control:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .music-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-color);
+        }
+
+        .music-text {
+            color: var(--text-color);
+            font-size: 14px;
+            user-select: none;
+        }
+
+        /* Final Message */
+        .final-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .final-message.show {
+            display: flex;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .final-message-content {
+            max-width: 600px;
+            animation: fadeInUp 1.5s ease-out 0.3s both;
+        }
+
+        .final-message h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            color: var(--text-color);
+            margin-bottom: 30px;
+            font-weight: 300;
+            line-height: 1.4;
+        }
+
+        .final-message p {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            color: var(--text-color);
+            opacity: 0.9;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .music-control {
+                bottom: 20px;
+                right: 20px;
+                padding: 10px 16px;
+            }
+
+            .music-text {
+                font-size: 12px;
+            }
+
+            .final-message {
+                padding: 20px;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--text-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Happy Birthday</h1>
+            <p class="welcome-subtitle">A special moment for someone special</p>
+        </div>
+    </div>
+
+    <!-- Slideshow Container -->
+    <div class="slideshow-container" id="slideshowContainer">
+        <!-- Slides will be dynamically created here -->
+    </div>
+
+    <!-- Music Control -->
+    <div class="music-control" id="musicControl">
+        <svg class="music-icon" viewBox="0 0 24 24" id="musicIcon">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <span class="music-text" id="musicText">Music</span>
+    </div>
+
+    <!-- Final Message -->
+    <div class="final-message" id="finalMessage">
+        <div class="final-message-content">
+            <h2>Thank You</h2>
+            <p>For being an amazing person. Wishing you all the happiness in the world on your special day and always.</p>
+        </div>
+    </div>
+
+    <!-- Background Audio (hidden) -->
+    <audio id="backgroundMusic" loop>
+        <!-- Replace 'music.mp3' with your music file path -->
+        <source src="music.mp3" type="audio/mpeg">
+        <source src="music.ogg" type="audio/ogg">
+    </audio>
+
+    <script>
+        /* ============================================
+           CONFIGURATION - Customize these values
+        ============================================ */
+        const config = {
+            // Image file paths - replace with your 5 photo paths
+            images: [
+                'images/photo1.jpeg',
+                'images/photo2.jpg',
+                'images/photo3.jpg',
+                'images/photo4.jpg',
+                'images/photo5.jpg'
+            ],
+            
+            // Timing settings (in milliseconds)
+            welcomeDisplayTime: 3000,      // How long to show welcome screen (3 seconds)
+            slideTransitionTime: 4000,     // Time each photo displays (4 seconds)
+            showFinalMessage: true,        // Set to false to disable final message
+            finalMessageDelay: 2000,       // Delay before showing final message after last photo
+            
+            // Music settings
+            musicVolume: 0.3,              // Volume level (0.0 to 1.0) - 0.3 = 30%
+            autoPlayMusic: true,           // Automatically start music
+            
+            // Welcome message - customize these
+            welcomeTitle: 'Happy Birthday',
+            welcomeSubtitle: 'A special moment for someone special',
+            
+            // Final message - customize these
+            finalTitle: 'Thank You',
+            finalMessage: 'For being an amazing person. Wishing you all the happiness in the world on your special day and always.'
+        };
+
+        /* ============================================
+           APPLICATION CODE - No need to modify below
+        ============================================ */
+
+        let currentSlideIndex = 0;
+        let slideshowInterval;
+        let isMusicMuted = false;
+
+        // DOM Elements
+        const loading = document.getElementById('loading');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const slideshowContainer = document.getElementById('slideshowContainer');
+        const musicControl = document.getElementById('musicControl');
+        const musicIcon = document.getElementById('musicIcon');
+        const musicText = document.getElementById('musicText');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const finalMessage = document.getElementById('finalMessage');
+        const finalTitle = finalMessage.querySelector('h2');
+        const finalMessageText = finalMessage.querySelector('p');
+
+        // Initialize the application
+        function init() {
+            // Set custom messages
+            document.querySelector('.welcome-title').textContent = config.welcomeTitle;
+            document.querySelector('.welcome-subtitle').textContent = config.welcomeSubtitle;
+            finalTitle.textContent = config.finalTitle;
+            finalMessageText.textContent = config.finalMessage;
+
+            // Set music volume
+            backgroundMusic.volume = config.musicVolume;
+
+            // Create slides
+            createSlides();
+
+            // Preload images
+            preloadImages().then(() => {
+                hideLoading();
+                startWelcomeSequence();
+            });
+
+            // Setup music control
+            setupMusicControl();
+
+            // Setup keyboard controls (spacebar to toggle music, escape to close final message)
+            document.addEventListener('keydown', handleKeyboard);
+        }
+
+        // Create slide elements
+        function createSlides() {
+            config.images.forEach((imagePath, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.style.backgroundImage = `url('${imagePath}')`;
+                if (index === 0) {
+                    slide.classList.add('active');
+                }
+                slideshowContainer.appendChild(slide);
+            });
+        }
+
+        // Preload all images
+        function preloadImages() {
+            const promises = config.images.map((src) => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = resolve;
+                    img.onerror = resolve; // Continue even if image fails to load
+                    img.src = src;
+                });
+            });
+            return Promise.all(promises);
+        }
+
+        // Hide loading screen
+        function hideLoading() {
+            setTimeout(() => {
+                loading.classList.add('hide');
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 500);
+            }, 500);
+        }
+
+        // Start welcome sequence
+        function startWelcomeSequence() {
+            setTimeout(() => {
+                welcomeScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    welcomeScreen.style.display = 'none';
+                    startSlideshow();
+                    if (config.autoPlayMusic) {
+                        playMusic();
+                    }
+                }, 1500);
+            }, config.welcomeDisplayTime);
+        }
+
+        // Start the slideshow
+        function startSlideshow() {
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+
+            function nextSlide() {
+                slides[currentSlideIndex].classList.remove('active');
+                currentSlideIndex = (currentSlideIndex + 1) % totalSlides;
+                slides[currentSlideIndex].classList.add('active');
+
+                // Check if we've completed one full cycle
+                if (currentSlideIndex === 0) {
+                    // After showing all slides once, show final message if enabled
+                    if (config.showFinalMessage) {
+                        clearInterval(slideshowInterval);
+                        setTimeout(() => {
+                            showFinalMessage();
+                        }, config.finalMessageDelay);
+                    }
+                }
+            }
+
+            // Start the interval
+            slideshowInterval = setInterval(nextSlide, config.slideTransitionTime);
+
+            // Also allow clicking to advance (optional feature)
+            slideshowContainer.addEventListener('click', () => {
+                clearInterval(slideshowInterval);
+                nextSlide();
+                slideshowInterval = setInterval(nextSlide, config.slideTransitionTime);
+            });
+        }
+
+        // Show final message
+        function showFinalMessage() {
+            finalMessage.classList.add('show');
+            // Stop slideshow when final message is shown
+            clearInterval(slideshowInterval);
+        }
+
+        // Setup music control
+        function setupMusicControl() {
+            musicControl.addEventListener('click', toggleMusic);
+        }
+
+        // Toggle music on/off
+        function toggleMusic() {
+            if (isMusicMuted) {
+                playMusic();
+            } else {
+                pauseMusic();
+            }
+        }
+
+        // Play music
+        function playMusic() {
+            backgroundMusic.play().catch(err => {
+                console.log('Audio play failed:', err);
+                // User interaction might be required for autoplay
+            });
+            isMusicMuted = false;
+            musicIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+            musicText.textContent = 'Music';
+        }
+
+        // Pause music
+        function pauseMusic() {
+            backgroundMusic.pause();
+            isMusicMuted = true;
+            musicIcon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM19 3.87v16.26c1.19-.69 2-1.99 2-3.63s-.81-2.94-2-3.63zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/><path d="M11 8v8l-4-4v4H3V8h4l4-4z"/>';
+            musicText.textContent = 'Muted';
+        }
+
+        // Keyboard controls
+        function handleKeyboard(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                toggleMusic();
+            } else if (event.code === 'Escape' && finalMessage.classList.contains('show')) {
+                finalMessage.classList.remove('show');
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', init);
+
+        // Handle page visibility changes (pause music when tab is hidden)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !isMusicMuted) {
+                backgroundMusic.pause();
+            } else if (!document.hidden && !isMusicMuted) {
+                backgroundMusic.play().catch(() => {});
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Gift</title>
+    <style>
+        /* ============================================
+           CUSTOMIZATION GUIDE:
+           - Change colors in :root variables below
+           - Adjust timing in JavaScript section
+           - Replace placeholder images with your photos
+           - Add your music file path
+        ============================================ */
+
+        :root {
+            /* Colors - customize these to match your theme */
+            --text-color: #ffffff;
+            --overlay-color: rgba(0, 0, 0, 0.5);
+            --accent-color: #f8d7da;
+            --transition-speed: 2s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background-color: #000;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(40, 30, 50, 0.95));
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 1.5s ease-out;
+        }
+
+        .welcome-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .welcome-content {
+            text-align: center;
+            padding: 20px;
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 300;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .welcome-subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--text-color);
+            opacity: 0.9;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        /* Slideshow Container */
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity var(--transition-speed) ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay-color);
+        }
+
+        /* Music Control */
+        .music-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .music-control:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .music-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-color);
+        }
+
+        .music-text {
+            color: var(--text-color);
+            font-size: 14px;
+            user-select: none;
+        }
+
+        /* Final Message */
+        .final-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .final-message.show {
+            display: flex;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .final-message-content {
+            max-width: 600px;
+            animation: fadeInUp 1.5s ease-out 0.3s both;
+        }
+
+        .final-message h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            color: var(--text-color);
+            margin-bottom: 30px;
+            font-weight: 300;
+            line-height: 1.4;
+        }
+
+        .final-message p {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            color: var(--text-color);
+            opacity: 0.9;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        /* Present Screen */
+        .present-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 998;
+            padding: 40px;
+        }
+
+        .present-screen.show {
+            display: flex;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        .present-container {
+            text-align: center;
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        .present-instruction {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            color: var(--text-color);
+            margin-bottom: 40px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .present-box {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .present-box:hover {
+            transform: scale(1.1);
+        }
+
+        .present-box:active {
+            transform: scale(0.95);
+        }
+
+        .present-box.opening {
+            animation: presentOpen 0.8s ease-out forwards;
+        }
+
+        @keyframes presentOpen {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(5deg);
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .present-icon {
+            width: 100%;
+            height: 100%;
+            fill: var(--accent-color);
+        }
+
+        /* Revealed Image */
+        .revealed-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 997;
+            padding: 40px;
+        }
+
+        .revealed-image.show {
+            display: flex;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .revealed-image-content {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: zoomIn 1s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .music-control {
+                bottom: 20px;
+                right: 20px;
+                padding: 10px 16px;
+            }
+
+            .music-text {
+                font-size: 12px;
+            }
+
+            .final-message {
+                padding: 20px;
+            }
+
+            .present-screen {
+                padding: 20px;
+            }
+
+            .present-box {
+                width: 150px;
+                height: 150px;
+            }
+
+            .present-instruction {
+                margin-bottom: 30px;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--text-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Happy Birthday</h1>
+            <p class="welcome-subtitle">A special moment for someone special</p>
+        </div>
+    </div>
+
+    <!-- Slideshow Container -->
+    <div class="slideshow-container" id="slideshowContainer">
+        <!-- Slides will be dynamically created here -->
+    </div>
+
+    <!-- Music Control -->
+    <div class="music-control" id="musicControl">
+        <svg class="music-icon" viewBox="0 0 24 24" id="musicIcon">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <span class="music-text" id="musicText">Music</span>
+    </div>
+
+    <!-- Present Screen -->
+    <div class="present-screen" id="presentScreen">
+        <div class="present-container">
+            <p class="present-instruction">Click the present to open your gift!</p>
+            <div class="present-box" id="presentBox">
+                <svg class="present-icon" viewBox="0 0 24 24">
+                    <!-- Gift box SVG -->
+                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revealed Image -->
+    <div class="revealed-image" id="revealedImage">
+        <img class="revealed-image-content" id="revealedImageContent" src="" alt="Revealed gift">
+    </div>
+
+    <!-- Final Message -->
+    <div class="final-message" id="finalMessage">
+        <div class="final-message-content">
+            <h2>Thank You</h2>
+            <p>For being an amazing person. Wishing you all the happiness in the world on your special day and always.</p>
+        </div>
+    </div>
+
+    <!-- Background Audio (hidden) -->
+    <audio id="backgroundMusic" loop>
+        <!-- Replace 'music.mp3' with your music file path -->
+        <source src="music.mp3" type="audio/mpeg">
+        <source src="music.ogg" type="audio/ogg">
+    </audio>
+
+    <script>
+        /* ============================================
+           CONFIGURATION - Customize these values
+        ============================================ */
+        const config = {
+            // Image file paths - replace with your 8 photo paths
+            images: [
+                'images/photo1.jpeg',
+                'images/photo2.jpeg',
+                'images/photo3.jpeg',
+                'images/photo4.jpeg',
+                'images/photo5.jpeg',
+                'images/photo6.jpeg',
+                'images/photo7.jpeg',
+                'images/photo8.jpeg'
+            ],
+            
+            // Timing settings (in milliseconds)
+            welcomeDisplayTime: 3000,      // How long to show welcome screen (3 seconds)
+            slideTransitionTime: 4000,     // Time each photo displays (4 seconds)
+            showFinalMessage: true,        // Set to false to disable final message
+            finalMessageDelay: 2000,       // Delay before showing final message after last photo
+            
+            // Music settings
+            musicVolume: 0.3,              // Volume level (0.0 to 1.0) - 0.3 = 30%
+            autoPlayMusic: true,           // Automatically start music
+            
+            // Welcome message - customize these
+            welcomeTitle: 'Happy Birthday',
+            welcomeSubtitle: 'A special moment for someone special',
+            
+            // Final message - customize these
+            finalTitle: 'Thank You',
+            finalMessage: 'For being an amazing person. Wishing you all the happiness in the world on your special day and always.',
+            
+            // Present reveal settings
+            revealImagePath: 'images/reveal.jpg',  // Path to the image that will be revealed
+            showFinalMessageAfterReveal: false      // Set to true to show final message after revealing image
+        };
+
+        /* ============================================
+           APPLICATION CODE - No need to modify below
+        ============================================ */
+
+        let currentSlideIndex = 0;
+        let slideshowInterval;
+        let isMusicMuted = false;
+
+        // DOM Elements
+        const loading = document.getElementById('loading');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const slideshowContainer = document.getElementById('slideshowContainer');
+        const musicControl = document.getElementById('musicControl');
+        const musicIcon = document.getElementById('musicIcon');
+        const musicText = document.getElementById('musicText');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const presentScreen = document.getElementById('presentScreen');
+        const presentBox = document.getElementById('presentBox');
+        const revealedImage = document.getElementById('revealedImage');
+        const revealedImageContent = document.getElementById('revealedImageContent');
+        const finalMessage = document.getElementById('finalMessage');
+        const finalTitle = finalMessage.querySelector('h2');
+        const finalMessageText = finalMessage.querySelector('p');
+
+        // Initialize the application
+        function init() {
+            // Set custom messages
+            document.querySelector('.welcome-title').textContent = config.welcomeTitle;
+            document.querySelector('.welcome-subtitle').textContent = config.welcomeSubtitle;
+            finalTitle.textContent = config.finalTitle;
+            finalMessageText.textContent = config.finalMessage;
+
+            // Set music volume
+            backgroundMusic.volume = config.musicVolume;
+
+            // Create slides
+            createSlides();
+
+            // Preload images (including reveal image)
+            const allImages = [...config.images];
+            if (config.revealImagePath) {
+                allImages.push(config.revealImagePath);
+            }
+            preloadImages(allImages).then(() => {
+                hideLoading();
+                startWelcomeSequence();
+            });
+
+            // Setup music control
+            setupMusicControl();
+
+            // Setup keyboard controls (spacebar to toggle music, escape to close final message)
+            document.addEventListener('keydown', handleKeyboard);
+        }
+
+        // Create slide elements
+        function createSlides() {
+            config.images.forEach((imagePath, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.style.backgroundImage = `url('${imagePath}')`;
+                if (index === 0) {
+                    slide.classList.add('active');
+                }
+                slideshowContainer.appendChild(slide);
+            });
+        }
+
+        // Preload all images
+        function preloadImages(imageArray) {
+            const imagesToLoad = imageArray || config.images;
+            const promises = imagesToLoad.map((src) => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = resolve;
+                    img.onerror = resolve; // Continue even if image fails to load
+                    img.src = src;
+                });
+            });
+            return Promise.all(promises);
+        }
+
+        // Hide loading screen
+        function hideLoading() {
+            setTimeout(() => {
+                loading.classList.add('hide');
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 500);
+            }, 500);
+        }
+
+        // Start welcome sequence
+        function startWelcomeSequence() {
+            setTimeout(() => {
+                welcomeScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    welcomeScreen.style.display = 'none';
+                    startSlideshow();
+                    if (config.autoPlayMusic) {
+                        playMusic();
+                    }
+                }, 1500);
+            }, config.welcomeDisplayTime);
+        }
+
+        // Start the slideshow
+        function startSlideshow() {
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+
+            function nextSlide() {
+                slides[currentSlideIndex].classList.remove('active');
+                currentSlideIndex = (currentSlideIndex + 1) % totalSlides;
+                slides[currentSlideIndex].classList.add('active');
+
+                // Check if we've completed one full cycle
+                if (currentSlideIndex === 0) {
+                    // After showing all slides once, show present screen
+                    clearInterval(slideshowInterval);
+                    setTimeout(() => {
+                        showPresentScreen();
+                    }, config.finalMessageDelay);
+                }
+            }
+
+            // Start the interval
+            slideshowInterval = setInterval(nextSlide, config.slideTransitionTime);
+
+            // Also allow clicking to advance (optional feature)
+            slideshowContainer.addEventListener('click', () => {
+                clearInterval(slideshowInterval);
+                nextSlide();
+                slideshowInterval = setInterval(nextSlide, config.slideTransitionTime);
+            });
+        }
+
+        // Show present screen
+        function showPresentScreen() {
+            presentScreen.classList.add('show');
+            // Setup present click handler
+            presentBox.addEventListener('click', openPresent, { once: true });
+        }
+
+        // Open present and reveal image
+        function openPresent() {
+            // Animate present opening
+            presentBox.classList.add('opening');
+            
+            // Set the reveal image source (it's already preloaded)
+            revealedImageContent.src = config.revealImagePath;
+            
+            setTimeout(() => {
+                presentScreen.classList.remove('show');
+                setTimeout(() => {
+                    revealedImage.classList.add('show');
+                    // Show final message after reveal if enabled
+                    if (config.showFinalMessageAfterReveal && config.showFinalMessage) {
+                        setTimeout(() => {
+                            revealedImage.classList.remove('show');
+                            setTimeout(() => {
+                                showFinalMessage();
+                            }, 500);
+                        }, 4000); // Show revealed image for 4 seconds
+                    }
+                }, 300);
+            }, 800);
+        }
+
+        // Show final message
+        function showFinalMessage() {
+            finalMessage.classList.add('show');
+            // Stop slideshow when final message is shown
+            clearInterval(slideshowInterval);
+        }
+
+        // Setup music control
+        function setupMusicControl() {
+            musicControl.addEventListener('click', toggleMusic);
+        }
+
+        // Toggle music on/off
+        function toggleMusic() {
+            if (isMusicMuted) {
+                playMusic();
+            } else {
+                pauseMusic();
+            }
+        }
+
+        // Play music
+        function playMusic() {
+            backgroundMusic.play().catch(err => {
+                console.log('Audio play failed:', err);
+                // User interaction might be required for autoplay
+            });
+            isMusicMuted = false;
+            musicIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+            musicText.textContent = 'Music';
+        }
+
+        // Pause music
+        function pauseMusic() {
+            backgroundMusic.pause();
+            isMusicMuted = true;
+            musicIcon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM19 3.87v16.26c1.19-.69 2-1.99 2-3.63s-.81-2.94-2-3.63zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/><path d="M11 8v8l-4-4v4H3V8h4l4-4z"/>';
+            musicText.textContent = 'Muted';
+        }
+
+        // Keyboard controls
+        function handleKeyboard(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                toggleMusic();
+            } else if (event.code === 'Escape') {
+                if (finalMessage.classList.contains('show')) {
+                    finalMessage.classList.remove('show');
+                } else if (revealedImage.classList.contains('show')) {
+                    revealedImage.classList.remove('show');
+                }
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', init);
+
+        // Handle page visibility changes (pause music when tab is hidden)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !isMusicMuted) {
+                backgroundMusic.pause();
+            } else if (!document.hidden && !isMusicMuted) {
+                backgroundMusic.play().catch(() => {});
+            }
+        });
+    </script>
+</body>
+</html>
+
