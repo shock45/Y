@@ -332,6 +332,10 @@
                 background-color: #000;
             }
 
+            .slide-zoom-out {
+                background-size: 80%;
+            }
+
             .music-control {
                 bottom: 20px;
                 right: 20px;
@@ -564,6 +568,10 @@
                 slide.style.backgroundImage = `url('${imagePath}')`;
                 if (index === 0) {
                     slide.classList.add('active');
+                }
+                // Add special class for photo3 (index 2)
+                if (index === 2) {
+                    slide.classList.add('slide-zoom-out');
                 }
                 slideshowContainer.appendChild(slide);
             });
