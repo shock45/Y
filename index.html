@@ -332,10 +332,6 @@
                 background-color: #000;
             }
 
-            .slide-zoom-out {
-                background-size: 80%;
-            }
-
             .music-control {
                 bottom: 20px;
                 right: 20px;
@@ -366,6 +362,36 @@
             .revealed-image-content {
                 max-width: 95%;
                 max-height: 85%;
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .slide {
+                background-size: cover;
+            }
+
+            .revealed-image-content {
+                max-width: 90%;
+                max-height: 90%;
+            }
+
+            .present-box {
+                width: 120px;
+                height: 120px;
+            }
+
+            .present-instruction {
+                margin-bottom: 20px;
+                font-size: clamp(0.9rem, 2vw, 1.2rem);
+            }
+
+            .welcome-title {
+                font-size: clamp(2rem, 6vw, 3.5rem);
+            }
+
+            .welcome-subtitle {
+                font-size: clamp(0.9rem, 2.5vw, 1.2rem);
             }
         }
 
@@ -568,10 +594,6 @@
                 slide.style.backgroundImage = `url('${imagePath}')`;
                 if (index === 0) {
                     slide.classList.add('active');
-                }
-                // Add special class for photo3 (index 2)
-                if (index === 2) {
-                    slide.classList.add('slide-zoom-out');
                 }
                 slideshowContainer.appendChild(slide);
             });
